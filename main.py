@@ -1,76 +1,27 @@
-import os
 import sys
+import os
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
-from config import system_prompt
 
-schema_get_files_info = types.FunctionDeclaration(
-            name="get_files_info",
-            description="Lists files in the specified directory along with their sizes, constrained to the working directory.",
-            parameters=types.Schema(
-                type=types.Type.OBJECT,
-                properties={
-                    "directory": types.Schema(
-                        type=types.Type.STRING,
-                        description="The directory to list files from, relative to the working directory. If not provided, lists files in the working directory itself.",
-                    ),
-                },
-            ),
-        )
-schema_get_file_content = types.FunctionDeclaration(
-            name="get_file_content",
-            description="Returns the contents of a file as a string, constrained to the working directory.",
-            parameters=types.Schema(
-                type=types.Type.OBJECT,
-                properties={
-                    "file_path": types.Schema(
-                        type=types.Type.STRING,
-                        description="The path of the file that needs to be read, relative to the working directory. If not provided, returns an error message.",
-                    ),
-                },
-            ),
-        )
-schema_run_python_file = types.FunctionDeclaration(
-            name="run_python_file",
-            description="Executes the contents of the given file, constrained to the working directory.",
-            parameters=types.Schema(
-                type=types.Type.OBJECT,
-                properties={
-                    "file_path": types.Schema(
-                        type=types.Type.STRING,
-                        description="The path of the file that needs to be run, relative to the working directory. If not provided, returns an error message.",
-                    ),
-                },
-            ),
-        )
-schema_write_file = types.FunctionDeclaration(
-            name="write_file",
-            description="Updates the contents of the given file, constrained to the working directory.",
-            parameters=types.Schema(
-                type=types.Type.OBJECT,
-                properties={
-                    "file_path": types.Schema(
-                        type=types.Type.STRING,
-                        description="The path of the file that needs to be written, relative to the working directory. If not provided, returns an error message. If it does not exist, it will create it.",
-                    ),
-                    "content": types.Schema(
-                        type=types.Type.STRING,
-                        description="These are the contents that will be written to the file, relative to the working directory. If not provided, returns an error message. If it does not exist, it will create it.",
-                    ),
-                },
-            ),
-        )
-
-available_functions = types.Tool(
-            function_declarations=[
-                schema_get_files_info,
-                
-            ]
-        )
-    
+from prompts import system_prompt
+from call_function import available_functions
 
 def main():
+    """
+    Main entry point for the AI Code Assistant application.
+    
+    This function loads environment variables, parses command-line arguments,
+    initializes the Gemini API client, and processes the user's prompt.
+    
+    It prints usage instructions if no prompt is provided, and optionally
+    prints verbose output. The function then constructs the message payload
+    and calls the content generation function.
+    
+    Raises:
+        SystemExit: If no user prompt is provided via command-line arguments.
+    """
+    
     load_dotenv()
 
     verbose = "--verbose" in sys.argv
@@ -98,10 +49,21 @@ def main():
 
 
 def generate_content(client, messages, verbose):
+    """Generates content using the provided AI client and message history, handling both text and function call responses.
+
+    Args:
+        client: The AI client instance used to generate content.
+        messages (list): A list of message objects representing the conversation history.
+        verbose (bool): If True, prints detailed token usage information.
+
+    Returns:
+        None. Prints the AI's response or function call details to the console.
+    """
     response = client.models.generate_content(
         model="gemini-2.0-flash-001",
         contents=messages,
-        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt),
+        config=types.GenerateContentConfig(
+            tools=[available_functions], system_instruction=system_prompt),
     )
 
     # Check if the response contains a function call
@@ -115,13 +77,9 @@ def generate_content(client, messages, verbose):
         if verbose:
             print("Prompt tokens:", response.usage_metadata.prompt_token_count)
             print("Response tokens:", response.usage_metadata.candidates_token_count)
-        print("Response:")
         print(f"Calling function: {function_call_part.name}({function_call_part.args})")
     else:
-        print("Response:")
-        print(response.text)
-
-    
+        return response.text
 
 if __name__ == "__main__":
     main()
