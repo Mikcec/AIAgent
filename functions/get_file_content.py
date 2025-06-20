@@ -4,6 +4,19 @@ from google.genai import types
 
 
 def get_file_content(working_directory, file_path):
+    """
+    Reads the content of a file located at the given file_path within the specified working_directory.
+    This function ensures that the file to be read is within the permitted working directory and is a regular file.
+    It attempts to read up to MAX_CHARS characters from the file. If the file content exceeds MAX_CHARS,
+    the returned string is truncated and a message is appended to indicate truncation.
+    Args:
+        working_directory (str): The base directory within which file access is permitted.
+        file_path (str): The relative path to the file from the working_directory.
+    Returns:
+        str: The content of the file as a string, truncated if necessary.
+             Returns an error message string if the file is outside the working directory,
+             does not exist, is not a regular file, or if an error occurs during reading.
+    """
 
 
     abs_path = os.path.abspath(os.path.join(working_directory, file_path))
@@ -39,6 +52,10 @@ schema_get_file_content = types.FunctionDeclaration(
                 },
             ),
         )
+
+"""
+This is the solution given by Boot
+"""
 # def get_file_content(working_directory, file_path):
 #     abs_working_dir = os.path.abspath(working_directory)
 #     abs_file_path = os.path.abspath(os.path.join(working_directory, file_path))

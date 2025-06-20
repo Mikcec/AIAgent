@@ -2,7 +2,18 @@ import os
 from google.genai import types
 
 def get_files_info(working_directory, directory=None):
-
+    """
+    Retrieves information about the contents of a specified directory within a working directory.
+    Args:
+        working_directory (str): The base directory within which directory listings are permitted.
+        directory (str, optional): The relative path to the directory whose contents are to be listed. If None, the working_directory itself is used.
+    Returns:
+        str: A formatted string listing each entry in the directory with its file size (in bytes) and whether it is a directory.
+             If the specified directory is outside the working directory or is not a directory, returns an error message.
+             If an error occurs while reading the directory, returns an error message.
+    """
+    if directory is None:
+        directory = "."  # Default to current directory
     abs_path = os.path.abspath(os.path.join(working_directory, directory))
     
     if not abs_path.startswith(os.path.abspath(working_directory)):

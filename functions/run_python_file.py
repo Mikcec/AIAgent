@@ -4,6 +4,21 @@ from google.genai import types
 
 
 def run_python_file(working_directory, file_path):
+    """
+    Executes a Python file located within a specified working directory.
+    Args:
+        working_directory (str): The base directory within which the Python file must reside.
+        file_path (str): The relative or absolute path to the Python file to execute.
+    Returns:
+        str: The combined standard output and standard error from the executed Python file,
+             or an error message if the file is not found, is outside the working directory,
+             is not a Python file, or if execution fails.
+    Notes:
+        - Only files with a ".py" extension are allowed.
+        - The file must exist and be located within the specified working directory.
+        - Execution is limited to 30 seconds.
+        - The function returns both stdout and stderr output, as well as the process exit code if non-zero.
+    """
     current_wd = os.path.abspath(working_directory)
     abs_path = os.path.abspath(os.path.join(working_directory, file_path))
     

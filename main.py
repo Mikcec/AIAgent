@@ -5,7 +5,7 @@ from google.genai import types
 from dotenv import load_dotenv
 
 from prompts import system_prompt
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 def main():
     """
@@ -66,20 +66,29 @@ def generate_content(client, messages, verbose):
             tools=[available_functions], system_instruction=system_prompt),
     )
 
-    # Check if the response contains a function call
-    function_call_part = None
-    for part in response.candidates[0].content.parts:
-        if hasattr(part, "function_call") and part.function_call is not None:
-            function_call_part = part.function_call
-            break
+    if verbose:
+        print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+        print("Response tokens:", response.usage_metadata.candidates_token_count)
 
-    if function_call_part:
-        if verbose:
-            print("Prompt tokens:", response.usage_metadata.prompt_token_count)
-            print("Response tokens:", response.usage_metadata.candidates_token_count)
-        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
-    else:
+    if not response.function_calls:
         return response.text
+
+    function_responses = []
+    for function_call_part in response.function_calls:
+        function_call_result = call_function(function_call_part, verbose)
+        if (
+            not function_call_result.parts
+            or not function_call_result.parts[0].function_response
+        ):
+            raise Exception("empty function call result")
+        if verbose:
+            print(f"-> {function_call_result.parts[0].function_response.response}")
+        function_responses.append(function_call_result.parts[0])
+
+    if not function_responses:
+        raise Exception("no function responses generated, exiting.")
+
+
 
 if __name__ == "__main__":
     main()
