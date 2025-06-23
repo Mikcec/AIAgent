@@ -50,35 +50,23 @@ def main():
 
 def generate_content(client, messages, verbose):
     """
-    Generates content using the specified client and message history, optionally printing verbose output.
+    Handles the content generation loop using the Gemini API client.
+
+    This function sends the current message history to the model, processes the response,
+    and handles any function calls by invoking the appropriate functions. It continues
+    the loop until the model produces a final response without further function calls.
 
     Args:
-        client: The API client instance used to generate content.
-        messages (list): The list of message objects or strings to send as input.
+        client: The Gemini API client instance.
+        messages (list): The conversation history as a list of message objects.
         verbose (bool): If True, prints detailed information about token usage and function responses.
-
-    Returns:
-        str: The generated text response if no function calls are present.
 
     Raises:
         Exception: If a function call result is empty or if no function responses are generated.
     """
-
-    # response = client.models.generate_content(
-    #     model="gemini-2.0-flash-001",
-    #     contents=messages,
-    #     config=types.GenerateContentConfig(
-    #         tools=[available_functions], system_instruction=system_prompt),
-    # )
-
-    # if verbose:
-    #     print("Prompt tokens:", response.usage_metadata.prompt_token_count)
-    #     print("Response tokens:", response.usage_metadata.candidates_token_count)
-
-    # if not response.function_calls:
-    #     return response.text
-
+    
     for i in range(20):  # Loop up to 20 times
+        print(f"Iteration {i + 1}")
         # Generate content with current messages
         response = client.models.generate_content(
             model="gemini-2.0-flash-001",
@@ -113,7 +101,7 @@ def generate_content(client, messages, verbose):
         else:
             # No function calls = agent is done
             # Print final response and break
-            print(f"Final response:\n{response.text}")
+            print(f"\nFinal response:\n{response.text}")
             break
 
 

@@ -6,6 +6,7 @@ from pkg.render import render
 
 
 def main():
+    """Main function to run the calculator application."""
     calculator = Calculator()
     if len(sys.argv) <= 1:
         print("Calculator App")
@@ -24,4 +25,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
