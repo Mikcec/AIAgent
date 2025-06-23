@@ -16,6 +16,20 @@ available_functions = types.Tool(
 )
 
 def call_function(function_call_part, verbose=False):
+    """
+    Calls a specified function from a predefined function map with provided arguments.
+    Args:
+        function_call_part: An object containing the function name (`name`) and arguments (`args`) to be called.
+        verbose (bool, optional): If True, prints detailed information about the function call. Defaults to False.
+    Returns:
+        types.Content: An object representing the result of the function call, or an error message if the function name is unknown.
+    Raises:
+        None
+    Notes:
+        - The function expects `function_call_part` to have `name` and `args` attributes.
+        - Adds a `working_directory` argument to the function call.
+        - Supported functions are: get_files_info, get_file_content, run_python_file, write_file.
+    """
 
     
     function_name = function_call_part.name
